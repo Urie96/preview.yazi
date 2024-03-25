@@ -4,6 +4,10 @@ Preview image/video/pdf/archive/ipynb/so/sqlite/svg/docx/xlsx/svg/dex/... on [Ya
 
 <video src="https://github.com/Urie96/preview.yazi/assets/43716456/ab45afad-2068-4e61-8599-65f9d99fe73f"></video>
 
+## Requirements
+
+- [Yazi](https://github.com/sxyazi/yazi) v0.2.4+
+
 ## Installation
 
 ```sh
