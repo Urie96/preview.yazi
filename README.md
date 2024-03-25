@@ -13,12 +13,19 @@ git clone https://github.com/Urie96/preview.yazi.git ~/.config/yazi/plugins/prev
 # Windows is unsupported
 ```
 
+And make sure you have installed the following dependencies and they can be found in the `PATH`:
+
+- bat
+- exiftool
+- pdftoppm
+- ffmpeg
+
 ## Usage
 
 Add this to your `yazi.toml`:
 
 ```toml
-[[plugin]]
+[plugin]
 previewers = [
   { name = "*/", run = "folder", sync = true },
   { name = "*.md", run = "preview" },
