@@ -17,7 +17,7 @@ And make sure you have installed the following dependencies and they can be foun
 
 - bat
 - exiftool
-- pdftoppm
+- poppler
 - ffmpeg
 
 ## Usage
