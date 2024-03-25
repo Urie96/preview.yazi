@@ -2,7 +2,7 @@
 
 Preview image/video/pdf/archive/ipynb/so/sqlite/svg/docx/xlsx/svg/dex/... on [Yazi](https://github.com/sxyazi/yazi) written in Bash.
 
-![video](https://github.com/Urie96/preview.yazi/assets/43716456/ab45afad-2068-4e61-8599-65f9d99fe73f)
+<video src="https://github.com/Urie96/preview.yazi/assets/43716456/ab45afad-2068-4e61-8599-65f9d99fe73f"></video>
 
 ## Installation
 
