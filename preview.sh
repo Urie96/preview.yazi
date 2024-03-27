@@ -36,6 +36,10 @@ FILE_EXTENSION="${FILE_PATH##*.}"
 FILE_EXTENSION_LOWER="$(printf "%s" "${FILE_EXTENSION}" | tr '[:upper:]' '[:lower:]')"
 FILE_NAME="${FILE_PATH##*/}"
 
+exist_command() {
+  command -v "$1" &>/dev/null
+}
+
 bat() {
   command bat "$@" \
     --color=always --paging=never \
@@ -75,6 +79,11 @@ echo_image_path() {
   echo -e "\033[1;30m─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\033[0m"
 }
 
+calc_hash() {
+  command md5 -q /dev/stdin 2>/dev/null && return
+  (md5sum || sha1sum || shasum || sha256sum) | cut -d " " -f 1
+}
+
 with_cache() {
   local cache=""
   local ext=""
@@ -105,7 +114,7 @@ with_cache() {
     shift
   done
 
-  cache="${TMPDIR:-/tmp/}yazi/$(ls -l "$FILE_PATH" | md5sum | cut -d ' ' -f 1)${ext}"
+  cache="${TMPDIR:-/tmp/}yazi/$(ls -l "$FILE_PATH" | calc_hash)${ext}"
   if [ ! -f "$cache" ]; then
     if "$no_stdout"; then
       "$@" &>/dev/null
@@ -140,9 +149,13 @@ handle_video() {
   fi
   with_cache -ext "$PREVIEW_OFFSET" -img -- ffmpegthumbnailer -q 6 -c jpeg -i "$FILE_PATH" -o /dev/stdout -t $((PREVIEW_OFFSET * 10)) -s 600
   echo "$PREVIEW_OFFSET"
-  ffprobe -select_streams v:0 \
-    -show_entries format=duration,bit_rate:stream=codec_name,width,height,avg_frame_rate,r_frame_rate,display_aspect_ratio,duration:format_tags \
-    -sexagesimal -v quiet -of flat "${FILE_PATH}" | bat -l ini
+  if exist_command ffprobe; then
+    ffprobe -select_streams v:0 \
+      -show_entries format=duration,bit_rate:stream=codec_name,width,height,avg_frame_rate,r_frame_rate,display_aspect_ratio,duration:format_tags \
+      -sexagesimal -v quiet -of flat "${FILE_PATH}" | bat -l ini
+  else
+    exiftool '-AvgBitrate' '-ImageSize' '-Video*' '-Media*' '-Audio*' | bat -l yaml
+  fi
   exit
 }
 
@@ -177,8 +190,17 @@ handle_pdf() {
   exit
 }
 
+glow() {
+  command glow -s dracula --width "$PREVIEW_WIDTH" - && return
+  handle_text
+}
+
 process_ipynb() {
-  jupyter-nbconvert "${FILE_PATH}" --to markdown --stdout | glow -s dracula --width "$PREVIEW_WIDTH" -
+  if exist_command jupyter-nbconvert; then
+    jupyter-nbconvert "${FILE_PATH}" --to markdown --stdout | glow
+  else
+    handle_json <"${FILE_PATH}"
+  fi
 }
 
 handle_ipynb() {
@@ -188,22 +210,28 @@ handle_ipynb() {
 handle_svg() {
   with_cache -img -- convert "$FILE_PATH" -write JPG:- -
   exiftool '-ImageSize' '-*' "${FILE_PATH}" | bat -l yaml
-  exit
 }
 
 handle_image() {
   echo_image_path "$FILE_PATH"
   exiftool '-ImageSize' '-*' "${FILE_PATH}" | bat -l yaml
-  exit
 }
 
 process_doc() {
-  pandoc -s -t markdown -- "$FILE_PATH" | glow -s dracula --width "$PREVIEW_WIDTH" - && return
-  textutil -stdout -cat txt "$FILE_PATH"
+  if exist_command pandoc; then
+    pandoc -s -t markdown -- "$FILE_PATH" | glow
+  elif exist_command textutil; then
+    textutil -stdout -cat txt "$FILE_PATH"
+  fi
 }
 
 disable_auto_peek() {
   echo "__disable_auto_peek__"
+}
+
+mlr() {
+  command mlr --icsv --opprint -C --key-color darkcyan --value-color grey70 head -n 500 && return
+  handle_text
 }
 
 preview_sqlite3() {
@@ -218,7 +246,7 @@ preview_sqlite3() {
   #   local sql="SELECT * FROM $table LIMIT 100;"
   #   echo -e "${sql}\n" | bat -l sql
   #   # sqlite3 will append hex d4 to the end of last column name, which will crash preview, so remove it
-  #   sqlite3 -header -csv "$FILE_PATH" "$sql" | sed 's/\xd4//g' | mlr --icsv --opprint -C --key-color darkcyan --value-color grey70 cat
+  #   sqlite3 -header -csv "$FILE_PATH" "$sql" | sed 's/\xd4//g' | mlr
   # fi
 }
 
@@ -239,15 +267,15 @@ process_baksmali() {
 }
 
 process_xlsx() {
-  xlsx2csv -- "$FILE_PATH" | head -n 500 | mlr --icsv --opprint -C --key-color darkcyan --value-color grey70 cat
+  xlsx2csv -- "$FILE_PATH" | head -n 500 | mlr
 }
 
 process_xls() {
-  xls2csv -- "$FILE_PATH" | head -n 500 | mlr --icsv --opprint -C --key-color darkcyan --value-color grey70 cat
+  xls2csv -- "$FILE_PATH" | head -n 500 | mlr
 }
 
 call_aapt() {
-  if command -v aapt &>/dev/null; then
+  if exist_command aapt; then
     command aapt "$@"
     return
   else
@@ -289,7 +317,7 @@ handle_extension() {
     handle_text
     ;;
   md)
-    glow -s dracula --width "$PREVIEW_WIDTH" "$FILE_PATH"
+    glow <"$FILE_PATH"
     ;;
   ipynb)
     handle_ipynb && exit
@@ -303,7 +331,7 @@ handle_extension() {
     handle_compress
     ;;
   csv | tsv)
-    mlr --icsv --opprint -C --key-color darkcyan --value-color grey70 head -n 500 "${FILE_PATH}"
+    mlr <"${FILE_PATH}"
     ;;
   uc!)
     with_cache -cat -- process_netease_uc
@@ -338,7 +366,7 @@ handle_extension() {
     ;;
   ## Archive
   7z | rar | ace | alz | arc | arj | bz | bz2 | cab | cpio | deb | gz | jar | lha | lz | lzh | lzma | lzo | \
-    rpm | rz | t7z | tar | tbz | tbz2 | tgz | tlz | txz | tZ | tzo | war | xpi | xz | Z | zip | nds | ipa | iso | pkg)
+    rpm | rz | t7z | tar | tbz | tbz2 | tgz | tlz | txz | tz | tzo | war | xpi | xz | z | zip | nds | ipa | iso | pkg)
     handle_compress
     ;;
   *)
@@ -355,10 +383,6 @@ handle_mime() {
   *archive | *zip)
     handle_compress
     ;;
-  # application/zip)
-  #   unzip -l "$FILE_PATH"
-  #   exit
-  #   ;;
   text/* | */xml | */javascript)
     handle_text
     ;;

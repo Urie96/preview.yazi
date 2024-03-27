@@ -17,12 +17,24 @@ git clone https://github.com/Urie96/preview.yazi.git ~/.config/yazi/plugins/prev
 # Windows is unsupported
 ```
 
-And make sure you have installed the following dependencies and they can be found in the `PATH`:
+**Dependencies**
 
-- bat
-- exiftool
-- poppler
-- ffmpeg
+```sh
+# Mac OS
+brew install bat ffmpegthumbnailer unar poppler exiftool tree \
+  glow imagemagick pandoc sqlite smali miller transmission-cli # optional in this line
+pipx install nbconvert xlsx2csv # optional
+
+# Arch Linux
+sudo pacman -S --needed bat ffmpegthumbnailer unarchiver poppler perl-image-exiftool tree \
+  glow imagemagick pandoc-bin sqlite smali miller android-tools transmission-cli # optional in this line
+pipx install nbconvert xlsx2csv # optional
+
+# Ubuntu/Debian
+sudo apt install bat ffmpegthumbnailer unar poppler-utils exiftool tree \
+  glow imagemagick pandoc sqlite miller transmission-cli # optional in this line
+pipx install nbconvert xlsx2csv # optional
+```
 
 ## Usage
 
@@ -41,3 +53,4 @@ previewers = [
   { name = "*", run = "preview" },
 ]
 ```
+
