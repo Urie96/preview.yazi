@@ -81,7 +81,7 @@ echo_image_path() {
 
 calc_hash() {
   command md5 -q /dev/stdin 2>/dev/null && return
-  (md5sum || sha1sum || shasum || sha256sum) | cut -d " " -f 1
+  (md5sum || sha1sum || shasum || sha256sum) 2>/dev/null | cut -d " " -f 1
 }
 
 with_cache() {
@@ -427,3 +427,4 @@ handle_mime "$(file -bL --mime-type -- "${FILE_PATH}")"
 
 # fallback to display raw text
 head -c 100000 "$FILE_PATH" | LC_CTYPE=C LANG=C sed 's/[^[:print:]]//g' | fold -w "$PREVIEW_WIDTH"
+

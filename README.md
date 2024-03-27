@@ -27,7 +27,7 @@ pipx install nbconvert xlsx2csv # optional
 
 # Arch Linux
 sudo pacman -S --needed bat ffmpegthumbnailer unarchiver poppler perl-image-exiftool tree \
-  glow imagemagick pandoc-bin sqlite smali miller android-tools transmission-cli # optional in this line
+  glow imagemagick pandoc-cli sqlite smali miller android-tools transmission-cli # optional in this line
 pipx install nbconvert xlsx2csv # optional
 
 # Ubuntu/Debian
@@ -53,4 +53,3 @@ previewers = [
   { name = "*", run = "preview" },
 ]
 ```
-
