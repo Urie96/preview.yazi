@@ -1,6 +1,6 @@
 # preview.yazi
 
-Preview image/video/pdf/archive/ipynb/so/sqlite/svg/docx/xlsx/svg/dex/... on [Yazi](https://github.com/sxyazi/yazi) written in Bash.
+Preview image/video/pdf/archive/ipynb/so/sqlite/svg/docx/xlsx/dex/dmg/ipa/apk/ttf/woff/... on [Yazi](https://github.com/sxyazi/yazi) written in Bash.
 
 <video src="https://github.com/Urie96/preview.yazi/assets/43716456/ab45afad-2068-4e61-8599-65f9d99fe73f"></video>
 
@@ -22,17 +22,17 @@ git clone https://github.com/Urie96/preview.yazi.git ~/.config/yazi/plugins/prev
 ```sh
 # Mac OS
 brew install bat ffmpegthumbnailer unar poppler exiftool tree \
-  glow imagemagick pandoc sqlite smali miller transmission-cli # optional in this line
+  glow imagemagick pandoc sqlite smali miller transmission-cli woff2 # optional in this line
 pipx install nbconvert xlsx2csv # optional
 
 # Arch Linux
 sudo pacman -S --needed bat ffmpegthumbnailer unarchiver poppler perl-image-exiftool tree \
-  glow imagemagick pandoc-cli sqlite smali miller android-tools transmission-cli # optional in this line
+  glow imagemagick pandoc-bin sqlite smali miller android-tools transmission-cli catdoc docx2txt woff2 # optional in this line
 pipx install nbconvert xlsx2csv # optional
 
 # Ubuntu/Debian
 sudo apt install bat ffmpegthumbnailer unar poppler-utils exiftool tree \
-  glow imagemagick pandoc sqlite miller transmission-cli # optional in this line
+  glow imagemagick pandoc sqlite miller transmission-cli catdoc docx2txt woff2 # optional in this line
 pipx install nbconvert xlsx2csv # optional
 ```
 
