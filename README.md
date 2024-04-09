@@ -4,6 +4,11 @@ Preview image/video/pdf/archive/ipynb/so/sqlite/svg/docx/xlsx/dex/dmg/ipa/apk/tt
 
 <video src="https://github.com/Urie96/preview.yazi/assets/43716456/ab45afad-2068-4e61-8599-65f9d99fe73f"></video>
 
+<img width="960" alt="20240409205847" src="https://github.com/Urie96/preview.yazi/assets/43716456/65554b40-b459-491a-9b69-9d3ee4de100a">
+<img width="960" alt="20240409205415" src="https://github.com/Urie96/preview.yazi/assets/43716456/04a8e55a-2e92-416b-8311-697552abe50c">
+<img width="960" alt="20240409205637" src="https://github.com/Urie96/preview.yazi/assets/43716456/583a5269-46c1-4982-b562-bc2d51e738c3">
+<img width="960" alt="20240409205748" src="https://github.com/Urie96/preview.yazi/assets/43716456/49e6cc45-095e-43ea-9047-2fdea727ee4b">
+
 ## Requirements
 
 - [Yazi](https://github.com/sxyazi/yazi) v0.2.4+
