@@ -55,11 +55,11 @@ bat() {
 
 echo_err() {
   if [ -e /dev/stderr ]; then
-    echo -e "$*" >>/dev/stderr
+    echo -e "$*" | fold -w "${PREVIEW_WIDTH}" >>/dev/stderr
   elif [ -e /dev/fd/2 ]; then
-    echo -e "$*" >>/dev/fd/2
+    echo -e "$*" | fold -w "${PREVIEW_WIDTH}" >>/dev/fd/2
   else
-    echo -e "$*"
+    echo -e "$*" | fold -w "${PREVIEW_WIDTH}"
   fi
 }
 
@@ -121,6 +121,10 @@ with_cache() {
     shift
   done
 
+  if "$cat_cache" && [ -z "$ext" ]; then
+    ext=".ansi"
+  fi
+
   CACHE="${TMPDIR:-/tmp/}yazi/$(ls -l "$FILE_PATH" | calc_hash)${ext}"
   local error=""
   if [ ! -f "$CACHE" ] && ! $TESTING; then
@@ -146,7 +150,7 @@ with_cache() {
     # rm "$cache"
   fi
   if [ -n "$error" ]; then
-    echo -e "$error" >>/dev/stderr
+    echo_err "$error"
   fi
 }
 
@@ -209,6 +213,14 @@ glow() {
   handle_text
 }
 
+process_svg() {
+  if exist_command rsvg-convert; then
+    rsvg-convert "$FILE_PATH" -o "$CACHE"
+  elif exist_command convert; then
+    convert "$FILE_PATH" "$CACHE"
+  fi
+}
+
 process_ipynb() {
   if exist_command jupyter-nbconvert; then
     jupyter-nbconvert "${FILE_PATH}" --to markdown --stdout | glow
@@ -219,11 +231,6 @@ process_ipynb() {
 
 handle_ipynb() {
   with_cache -cat -- process_ipynb
-}
-
-handle_svg() {
-  with_cache -img -- convert "$FILE_PATH" -write JPG:- -
-  exiftool '-ImageSize' '-*' "${FILE_PATH}" | bat -l yaml
 }
 
 handle_image() {
@@ -513,7 +520,8 @@ handle_extension() {
     with_cache -cat -- process_xls
     ;;
   svg)
-    handle_svg
+    with_cache -img -ext png -- process_svg
+    exiftool '-ImageSize' '-*' "${FILE_PATH}" | bat -l yaml
     ;;
   epub)
     with_cache -img -- process_epub
@@ -551,6 +559,12 @@ handle_extension() {
     ;;
   woff2)
     with_cache -img --no-stdout -ext png -- process_woff2 "$FILE_PATH"
+    ;;
+  ansi)
+    cat "$FILE_PATH"
+    ;;
+  cast)
+    asciinema cat "$FILE_PATH"
     ;;
   ##Archive
   7z | rar | ace | alz | arc | arj | bz | bz2 | cab | cpio | deb | gz | jar | lha | lz | lzh | lzma | lzo | \
