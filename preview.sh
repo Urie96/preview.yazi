@@ -72,6 +72,10 @@ exiftool() {
   command exiftool '--ExifTool*' '--Directory' '--File*' '--ProfileDescription*' "$@"
 }
 
+show_photo_exiftool() {
+  exiftool '-ImageSize' '-FocalLength' '-FNumber' '-ShutterSpeedValue' '-ISO' '-ExposureBiasValue' '-RawExposureBias' '-DateTimeOriginal' '-*' "$FILE_PATH" | bat -l yaml
+}
+
 handle_text() {
   bat "${FILE_PATH}" && exit
 }
@@ -125,7 +129,8 @@ with_cache() {
     ext=".ansi"
   fi
 
-  CACHE="${TMPDIR:-/tmp/}yazi/$(ls -l "$FILE_PATH" | calc_hash)${ext}"
+  local tmp_dir=${TMPDIR:-/tmp}
+  CACHE="${tmp_dir%/}/yazi/$(ls -l "$FILE_PATH" | calc_hash)${ext}"
   local error=""
   if [ ! -f "$CACHE" ] && ! $TESTING; then
     error="$(
@@ -224,6 +229,8 @@ process_svg() {
 process_ipynb() {
   if exist_command jupyter-nbconvert; then
     jupyter-nbconvert "${FILE_PATH}" --to markdown --stdout | glow
+  elif exist_command nbpreview; then
+    nbpreview --no-paging --nerd-font --decorated --no-files --unicode --color --images --color-system=standard --theme=ansi_dark "${FILE_PATH}"
   else
     handle_json <"${FILE_PATH}"
   fi
@@ -235,7 +242,7 @@ handle_ipynb() {
 
 handle_image() {
   echo_image_path "$FILE_PATH"
-  exiftool '-ImageSize' '-*' "${FILE_PATH}" | bat -l yaml
+  show_photo_exiftool
 }
 
 process_docx() {
@@ -473,7 +480,7 @@ handle_extension() {
     handle_text
     ;;
   md)
-    glow <"$FILE_PATH"
+    with_cache -cat -- command glow -s dracula "$FILE_PATH"
     ;;
   ipynb)
     handle_ipynb && exit
@@ -566,6 +573,10 @@ handle_extension() {
   cast)
     asciinema cat "$FILE_PATH"
     ;;
+  raf)
+    with_cache -img -- exiftool "$FILE_PATH" -previewimage -b
+    show_photo_exiftool
+    ;;
   ##Archive
   7z | rar | ace | alz | arc | arj | bz | bz2 | cab | cpio | deb | gz | jar | lha | lz | lzh | lzma | lzo | \
     rpm | rz | t7z | tar | tbz | tbz2 | tgz | tlz | txz | tz | tzo | war | xpi | xz | z | zip | nds | iso | pkg)
@@ -608,6 +619,11 @@ handle_mime() {
     ;;
   *sqlite3)
     preview_sqlite3
+    ;;
+  application/octet-stream)
+    if [ "${FILE_EXTENSION_LOWER}" = "ts" ]; then
+      handle_video
+    fi
     ;;
   *)
     return
